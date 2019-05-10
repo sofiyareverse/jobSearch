@@ -3,7 +3,7 @@
     <tr>
       <th>Name</th>
       <th>Email</th>
-      <th>Number</th>
+      <th>Phone</th>
     </tr>
   </thead>
   <tbody>
@@ -11,7 +11,7 @@
       <tr>
         <td><%= user.name %></td>
         <td><%= user.try(:email) %></td>
-        <td><%= user.try(:number) %></td>
+        <td><%= user.try(:phone) %></td>
       </tr>
     <% end %>
   </tbody>
