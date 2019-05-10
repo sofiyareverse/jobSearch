@@ -4,7 +4,6 @@ class User < ApplicationRecord
   has_many :notes
   has_and_belongs_to_many :jobs
 
-  validates :name, presence: true
   validate :email_format
   validates :phone,
             numericality: true,
@@ -14,24 +13,37 @@ class User < ApplicationRecord
   def self.import(file)
     CSV.foreach(file.path, headers: true) do |row|
       new_rows_hash = modefy_file_headers(row)
-      
-      if User.where(email: new_rows_hash[:email]).count > 0
-        true
-      else
-        User.create!(
-          name: new_rows_hash[:name],
-          email: new_rows_hash[:email],
-          phone: self.try(:phone) || new_rows_hash[:phone]
-        )
-      end
+
+    unless User.where(email: new_rows_hash[:email]).blank?
+      User.find_by(email: new_rows_hash[:email]).update!(
+        name: new_rows_hash[:name],
+        phone: new_rows_hash[:phone]
+      )
+    else
+      User.create!(
+        name: new_rows_hash[:name],
+        email: new_rows_hash[:email],
+        phone: self.try(:phone) || new_rows_hash[:phone]
+      )
+    end
+
+      find_or_create_note(new_rows_hash) if new_rows_hash[:note]
     end
   end
 
   private
 
-  def self.modefy_file_headers(row)
-    row.inject({}) do |h, (k, v)|
+  def self.modefy_file_headers(rows)
+    rows.inject({}) do |h, (k, v)|
       h[k.downcase.tr(' ', '_').delete('-').to_sym] = v; h
+    end
+  end
+
+  def self.find_or_create_note(rows)
+    user_id = User.find_by(email: rows[:email]).id
+
+    if Note.where(user_id: user_id, message: rows[:note]).blank?
+      Note.create!(message: rows[:note], user_id: user_id)
     end
   end
 

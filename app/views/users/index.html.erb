@@ -4,14 +4,22 @@
       <th>Name</th>
       <th>Email</th>
       <th>Phone</th>
+      <th>Notes</th>
     </tr>
   </thead>
   <tbody>
     <% @users.each do |user| %>
       <tr>
-        <td><%= user.name %></td>
+        <td><%= user.try(:name) %></td>
         <td><%= user.try(:email) %></td>
         <td><%= user.try(:phone) %></td>
+        <td>
+          <% unless user.notes.blank? %>
+            <% user.notes.each do |note| %>
+              <%= note.message %>
+            <% end %>
+          <% end %>
+        </td>
       </tr>
     <% end %>
   </tbody>
