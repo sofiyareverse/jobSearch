@@ -2,7 +2,8 @@ class User < ApplicationRecord
   require 'csv'
 
   has_many :notes
-  has_and_belongs_to_many :jobs
+  has_many :candidates
+  has_many :jobs, through: :candidates
 
   validate :email_format
   validates :phone,
@@ -14,21 +15,21 @@ class User < ApplicationRecord
     CSV.foreach(file.path, headers: true) do |row|
       new_rows_hash = modefy_file_headers(row)
 
-    unless User.where(email: new_rows_hash[:email]).blank?
-      User.find_by(email: new_rows_hash[:email]).update!(
-        name: new_rows_hash[:name],
-        phone: new_rows_hash[:phone]
-      )
-    else
-      User.create!(
-        name: new_rows_hash[:name],
-        email: new_rows_hash[:email],
-        phone: self.try(:phone) || new_rows_hash[:phone]
-      )
-    end
-
-      find_or_create_note(new_rows_hash) if new_rows_hash[:note]
+      unless User.where(email: new_rows_hash[:email]).blank?
+        User.find_by(email: new_rows_hash[:email]).update!(
+          name: new_rows_hash[:name],
+          phone: new_rows_hash[:phone]
+        )
+        find_or_create_note(new_rows_hash) if new_rows_hash[:note]
+      else
+        User.create!(
+          name: new_rows_hash[:name],
+          email: new_rows_hash[:email],
+          phone: self.try(:phone) || new_rows_hash[:phone]
+        )
+      end
       find_or_create_job(new_rows_hash) if new_rows_hash[:job]
+      apply_job(new_rows_hash) if new_rows_hash[:created_at]
     end
   end
 
@@ -49,11 +50,18 @@ class User < ApplicationRecord
   end
 
   def self.find_or_create_job(rows)
-    user_id = User.find_by(email: rows[:email])
-
     if Job.where(title: rows[:job]).blank?
-      job = Job.create!(title: rows[:job])
-      job.users << user_id
+      Job.create!(title: rows[:job])
+    end
+  end
+
+  def self.apply_job(rows)
+    if Candidate.where(applied_at: rows[:created_at]).blank?
+      Candidate.create!(
+        job_id: Job.find_by(title: rows[:job]).id,
+        user_id: User.find_by(name: rows[:name]).id,
+        applied_at: rows[:created_at]
+      )
     end
   end
 

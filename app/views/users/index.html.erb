@@ -6,6 +6,7 @@
       <th>Phone</th>
       <th>Notes</th>
       <th>Jobs</th>
+      <th>Applied At</th>
     </tr>
   </thead>
   <tbody>
@@ -17,17 +18,22 @@
         <td>
           <% unless user.notes.blank? %>
             <% user.notes.each do |note| %>
-              <%= note.message %>
+              <%= truncate(note.message, length: 100, separator: '.') %><br/>
             <% end %>
           <% end %>
         </td>
-        <td>
-          <% unless user.jobs.blank? %>
-            <% user.jobs.each do |job| %>
-              <%= job.title %>
+        <% if Candidate.where(user_id: user.id).present? %>
+          <td>
+            <% user.candidates.each do |candidate| %>
+              <%= candidate.job.title %><br/>
             <% end %>
-          <% end %>
-        </td>
+          </td>
+          <td>
+            <% user.candidates.each do |candidate| %>
+              <%= candidate.applied_at.to_date %><br/>
+            <% end %>
+          </td>
+        <% end %>
       </tr>
     <% end %>
   </tbody>
