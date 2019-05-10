@@ -1,0 +1,26 @@
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.name %></td>
+        <td><%= user.try(:email) %></td>
+        <td><%= user.try(:number) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div>
+  <h4>Import File:</h4>
+  <%= form_tag import_users_path, multipart: true do %>
+    <%= file_field_tag :file %>
+    <%= submit_tag 'Import CSV' %>
+  <% end %>
+</div>
