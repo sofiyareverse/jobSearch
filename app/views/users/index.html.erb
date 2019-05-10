@@ -5,6 +5,7 @@
       <th>Email</th>
       <th>Phone</th>
       <th>Notes</th>
+      <th>Jobs</th>
     </tr>
   </thead>
   <tbody>
@@ -17,6 +18,13 @@
           <% unless user.notes.blank? %>
             <% user.notes.each do |note| %>
               <%= note.message %>
+            <% end %>
+          <% end %>
+        </td>
+        <td>
+          <% unless user.jobs.blank? %>
+            <% user.jobs.each do |job| %>
+              <%= job.title %>
             <% end %>
           <% end %>
         </td>

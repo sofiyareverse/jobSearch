@@ -28,6 +28,7 @@ class User < ApplicationRecord
     end
 
       find_or_create_note(new_rows_hash) if new_rows_hash[:note]
+      find_or_create_job(new_rows_hash) if new_rows_hash[:job]
     end
   end
 
@@ -44,6 +45,15 @@ class User < ApplicationRecord
 
     if Note.where(user_id: user_id, message: rows[:note]).blank?
       Note.create!(message: rows[:note], user_id: user_id)
+    end
+  end
+
+  def self.find_or_create_job(rows)
+    user_id = User.find_by(email: rows[:email])
+
+    if Job.where(title: rows[:job]).blank?
+      job = Job.create!(title: rows[:job])
+      job.users << user_id
     end
   end
 
